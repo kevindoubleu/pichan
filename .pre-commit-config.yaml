@@ -13,3 +13,13 @@ repos:
         entry: ./githooks/go.sh
         language: golang
         pass_filenames: false
+      - id: go-test-runner
+        name: Test Go Code
+        entry: go test -v ./...
+        language: golang
+        pass_filenames: false
+      - id: go-build
+        name: Build Go Code
+        entry: go build -o tracker.out cmd/tracker/tracker.go
+        language: golang
+        pass_filenames: false
