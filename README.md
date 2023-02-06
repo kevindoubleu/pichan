@@ -1,2 +1,3 @@
 # pichan
-Home Raspberry Pi Assistant
+
+Pi Central Home Assistant Network
