@@ -9,16 +9,18 @@ import (
 func TestBuildGreeting(t *testing.T) {
 	testCases := []struct {
 		desc     string
+		name     string
 		expected string
 	}{
 		{
 			desc:     "returns expected string",
-			expected: hello.Greeting,
+			name:     "there",
+			expected: hello.Greeting + " there!",
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			actual := hello.BuildGreeting()
+			actual := hello.BuildGreeting(tC.name)
 			if tC.expected != actual {
 				t.Errorf("%s != %s", tC.expected, actual)
 			}

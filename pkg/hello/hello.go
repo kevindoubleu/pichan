@@ -1,7 +1,7 @@
 package hello
 
-var Greeting = "Hello!"
+var Greeting = "Hello"
 
-func BuildGreeting() string {
-	return Greeting
+func BuildGreeting(name string) string {
+	return Greeting + " " + name + "!"
 }
