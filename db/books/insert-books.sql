@@ -1,7 +1,7 @@
 \c books;
 
 INSERT INTO
-    books (name, ACTION, time)
+    books (name, action, time)
 VALUES
     (
         'Psychology of Money',
