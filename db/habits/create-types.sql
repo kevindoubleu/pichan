@@ -1,0 +1,5 @@
+\c habits;
+
+DROP TYPE IF EXISTS HABIT_CONNOTATION CASCADE;
+
+CREATE TYPE HABIT_CONNOTATION AS ENUM ('Positive', 'Neutral', 'Negative');
