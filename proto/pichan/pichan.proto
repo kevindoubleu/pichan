@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package pichan;
+
+option go_package = "github.com/kevindoubleu/pichan/proto/pichan";
+
+message Description {
+    string title = 1;
+    string subtitle = 2;
+    string image = 3;
+}

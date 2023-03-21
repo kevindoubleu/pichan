@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package habits;
+
+import "google/protobuf/empty.proto";
+import "pichan.proto";
+
+option go_package = "github.com/kevindoubleu/pichan/proto/habits";
+
+enum Connotation {
+    INVALID = 0;
+    Negative = 1;
+    Neutral = 2;
+    Positive = 3;
+}
+
+message Scorecard {
+    int32 id = 1;
+    string name = 2;
+    Connotation connotation = 3;
+    string time = 4;
+    int32 order = 5;
+}
+
+message ScorecardList {
+    repeated Scorecard scorecards = 1;
+}
+
+service Scorecards {
+    rpc Describe(google.protobuf.Empty) returns (pichan.Description) {}
+    rpc Insert(Scorecard) returns (Scorecard) {}
+    rpc List(google.protobuf.Empty) returns (ScorecardList) {}
+}
