@@ -10,6 +10,7 @@ import (
 	"github.com/kevindoubleu/pichan/internal/habits/service"
 	pb "github.com/kevindoubleu/pichan/proto/habits"
 	testdata "github.com/kevindoubleu/pichan/test/data/habits"
+	mock "github.com/kevindoubleu/pichan/test/mocks/habits/service/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,7 +55,7 @@ func TestInsert(t *testing.T) {
 	protoScorecard := testdata.ProtoScorecard1
 
 	t.Run("success: happy case", func(t *testing.T) {
-		m := newMockScorecardStore()
+		m := mock.NewStore(t)
 		svc := service.NewScorecardsServerWithStore(m)
 
 		m.On("Insert", domainScorecard).Return(&domainScorecard, nil)
@@ -65,10 +66,11 @@ func TestInsert(t *testing.T) {
 
 		assert.Equal(t, expected, actual)
 		assert.NoError(t, actualErr)
+		m.AssertExpectations(t)
 	})
 
 	t.Run("fail: Store.Insert failure", func(t *testing.T) {
-		m := newMockScorecardStore()
+		m := mock.NewStore(t)
 		svc := service.NewScorecardsServerWithStore(m)
 
 		expectedErr := errors.New("error on insert")
@@ -78,10 +80,11 @@ func TestInsert(t *testing.T) {
 
 		assert.EqualError(t, expectedErr, actualErr.Error())
 		assert.Nil(t, actual)
+		m.AssertExpectations(t)
 	})
 
 	t.Run("fail: Store.Get failure", func(t *testing.T) {
-		m := newMockScorecardStore()
+		m := mock.NewStore(t)
 		svc := service.NewScorecardsServerWithStore(m)
 
 		expectedErr := errors.New("example error on Store.Get")
@@ -92,6 +95,7 @@ func TestInsert(t *testing.T) {
 
 		assert.EqualError(t, expectedErr, actualErr.Error())
 		assert.Nil(t, actual)
+		m.AssertExpectations(t)
 	})
 }
 
@@ -108,7 +112,7 @@ func TestList(t *testing.T) {
 	}
 
 	t.Run("success: happy case", func(t *testing.T) {
-		m := newMockScorecardStore()
+		m := mock.NewStore(t)
 		svc := service.NewScorecardsServerWithStore(m)
 
 		m.On("List").Return(domainScorecards, nil)
@@ -118,10 +122,11 @@ func TestList(t *testing.T) {
 
 		assert.Equal(t, expected, actual)
 		assert.NoError(t, actualErr)
+		m.AssertExpectations(t)
 	})
 
 	t.Run("success: empty list", func(t *testing.T) {
-		m := newMockScorecardStore()
+		m := mock.NewStore(t)
 		svc := service.NewScorecardsServerWithStore(m)
 
 		emptyScorecardSlice := []habits.Scorecard{}
@@ -134,10 +139,11 @@ func TestList(t *testing.T) {
 
 		assert.Equal(t, expected, actual)
 		assert.NoError(t, actualErr)
+		m.AssertExpectations(t)
 	})
 
 	t.Run("fail: Store.List failure", func(t *testing.T) {
-		m := newMockScorecardStore()
+		m := mock.NewStore(t)
 		svc := service.NewScorecardsServerWithStore(m)
 
 		expectedErr := errors.New("example error on Store.List")
@@ -147,5 +153,6 @@ func TestList(t *testing.T) {
 
 		assert.Nil(t, actual)
 		assert.EqualError(t, expectedErr, actualErr.Error())
+		m.AssertExpectations(t)
 	})
 }
