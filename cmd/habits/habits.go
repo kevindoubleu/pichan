@@ -30,7 +30,15 @@ func main() {
 	}
 }
 
-func startTcpListener(log logger.Logger, config *configs.Config) net.Listener {
+func loadConfigs() configs.Config {
+	config, err := configs.NewConfig(configs.ConfigFile)
+	if err != nil {
+		panic(err)
+	}
+	return *config
+}
+
+func startTcpListener(log logger.Logger, config configs.Config) net.Listener {
 	listener, err := net.Listen("tcp", config.Server.Host+":"+config.Server.Port)
 	if err != nil {
 		log.Fatalw("could not listen",
@@ -53,18 +61,10 @@ func getListenerCloser(log logger.Logger, listener net.Listener) func() {
 	}
 }
 
-func loadConfigs() *configs.Config {
-	config, err := configs.NewConfig(configs.ConfigFile)
-	if err != nil {
-		panic(err)
-	}
-	return config
-}
-
-func startGrpcServer(config *configs.Config) *grpc.Server {
+func startGrpcServer(config configs.Config) *grpc.Server {
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(logger.NewUnaryServerLogger()),
 	)
-	pb.RegisterScorecardsServer(grpcServer, service.NewScorecardsServer(config.Habits))
+	pb.RegisterScorecardsServer(grpcServer, service.NewScorecardsServer(config))
 	return grpcServer
 }

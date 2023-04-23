@@ -5,155 +5,151 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/kevindoubleu/pichan/configs"
 	"github.com/kevindoubleu/pichan/internal/habits"
-	"github.com/kevindoubleu/pichan/internal/habits/service"
 	pb "github.com/kevindoubleu/pichan/proto/habits"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/kevindoubleu/pichan/configs"
+	"github.com/kevindoubleu/pichan/internal/habits/service"
 	testdata "github.com/kevindoubleu/pichan/test/data/habits"
 	mock "github.com/kevindoubleu/pichan/test/mocks/habits/service/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
+type ServiceSuite struct {
+	suite.Suite
+
+	config configs.Config
+	ctx    context.Context
+
+	mockStore *mock.Store
+	service   service.ScorecardsServer
+}
+
+func TestServiceSuite(t *testing.T) {
+	suite.Run(t, new(ServiceSuite))
+}
+
+func (s *ServiceSuite) SetupSuite() {
+	config, _ := configs.NewConfig("../../../configs/" + configs.TestConfigFile)
+	s.config = *config
+	s.ctx = context.Background()
+}
+
+func (s *ServiceSuite) SetupTest() {
+	s.mockStore = &mock.Store{}
+	s.service = service.NewScorecardsServerWithStore(s.config, s.mockStore)
+}
+
+func (s *ServiceSuite) TearDownTest() {
+	s.mockStore.AssertExpectations(s.T())
+}
+
 var (
-	ctx    = context.Background()
-	config *configs.Config
-)
+	// TestInsert
+	domainScorecard = testdata.DomainScorecard1
+	protoScorecard  = testdata.ProtoScorecard1
 
-func TestMain(m *testing.M) {
-	config, _ = configs.NewConfig(configs.TestConfigFile)
-}
-
-func TestNewScorecardsServer(t *testing.T) {
-	t.Run("happy case", func(t *testing.T) {
-		server := service.NewScorecardsServer(config.Habits)
-
-		assert.NotNil(t, server)
-		assert.True(t, server.GetStore().IsLive())
-	})
-
-	t.Run("fail to get scorecard store", func(t *testing.T) {
-		configWithInvalidUrl, _ := configs.NewConfig(configs.TestConfigFile)
-		configWithInvalidUrl.Habits.StoreUrl = "invalid url"
-
-		server := service.NewScorecardsServer(configWithInvalidUrl.Habits)
-
-		assert.False(t, server.GetStore().IsLive())
-	})
-}
-
-func TestDescribe(t *testing.T) {
-	svc := service.NewScorecardsServer(config.Habits)
-	description, err := svc.Describe(ctx, nil)
-
-	assert.NoError(t, err)
-	assert.NotEmpty(t, description.Title)
-	assert.NotEmpty(t, description.Subtitle)
-	assert.NotEmpty(t, description.Image)
-}
-
-func TestInsert(t *testing.T) {
-	domainScorecard := testdata.DomainScorecard1
-	protoScorecard := testdata.ProtoScorecard1
-
-	t.Run("success: happy case", func(t *testing.T) {
-		m := mock.NewStore(t)
-		svc := service.NewScorecardsServerWithStore(m)
-
-		m.On("Insert", domainScorecard).Return(&domainScorecard, nil)
-		m.On("Get", 0).Return(&domainScorecard, nil)
-
-		expected := protoScorecard
-		actual, actualErr := svc.Insert(ctx, expected)
-
-		assert.Equal(t, expected, actual)
-		assert.NoError(t, actualErr)
-		m.AssertExpectations(t)
-	})
-
-	t.Run("fail: Store.Insert failure", func(t *testing.T) {
-		m := mock.NewStore(t)
-		svc := service.NewScorecardsServerWithStore(m)
-
-		expectedErr := errors.New("error on insert")
-		m.On("Insert", domainScorecard).Return(nil, expectedErr)
-
-		actual, actualErr := svc.Insert(ctx, protoScorecard)
-
-		assert.EqualError(t, expectedErr, actualErr.Error())
-		assert.Nil(t, actual)
-		m.AssertExpectations(t)
-	})
-
-	t.Run("fail: Store.Get failure", func(t *testing.T) {
-		m := mock.NewStore(t)
-		svc := service.NewScorecardsServerWithStore(m)
-
-		expectedErr := errors.New("example error on Store.Get")
-		m.On("Insert", domainScorecard).Return(&domainScorecard, nil)
-		m.On("Get", 0).Return(nil, expectedErr)
-
-		actual, actualErr := svc.Insert(ctx, protoScorecard)
-
-		assert.EqualError(t, expectedErr, actualErr.Error())
-		assert.Nil(t, actual)
-		m.AssertExpectations(t)
-	})
-}
-
-func TestList(t *testing.T) {
-	domainScorecards := []habits.Scorecard{
+	// TestList
+	domainScorecards = []habits.Scorecard{
 		testdata.DomainScorecard1,
 		testdata.DomainScorecard1,
 	}
-	protoScorecardList := &pb.ScorecardList{
+	protoScorecardList = &pb.ScorecardList{
 		Scorecards: []*pb.Scorecard{
 			testdata.ProtoScorecard1,
 			testdata.ProtoScorecard1,
 		},
 	}
+)
 
-	t.Run("success: happy case", func(t *testing.T) {
-		m := mock.NewStore(t)
-		svc := service.NewScorecardsServerWithStore(m)
+func (s *ServiceSuite) TestNewScorecardsServer_ValidConfig_ShouldGetLiveServer() {
+	server := service.NewScorecardsServer(s.config)
 
-		m.On("List").Return(domainScorecards, nil)
+	assert.NotNil(s.T(), server)
+	assert.True(s.T(), server.GetStore().IsLive())
+}
 
-		expected := protoScorecardList
-		actual, actualErr := svc.List(ctx, nil)
+func (s *ServiceSuite) TestNewScorecardsServer_InvalidConfig_ShouldNotGetLiveServer() {
+	configWithInvalidUrl, _ := configs.NewConfig("../../../configs/" + configs.TestConfigFile)
+	configWithInvalidUrl.Habits.StoreUrl = "invalid url"
 
-		assert.Equal(t, expected, actual)
-		assert.NoError(t, actualErr)
-		m.AssertExpectations(t)
-	})
+	server := service.NewScorecardsServer(*configWithInvalidUrl)
 
-	t.Run("success: empty list", func(t *testing.T) {
-		m := mock.NewStore(t)
-		svc := service.NewScorecardsServerWithStore(m)
+	assert.False(s.T(), server.GetStore().IsLive())
+}
 
-		emptyScorecardSlice := []habits.Scorecard{}
-		m.On("List").Return(emptyScorecardSlice, nil)
+func (s *ServiceSuite) TestDescribe_ShouldGetAllDescriptionFields() {
+	svc := service.NewScorecardsServer(s.config)
+	description, err := svc.Describe(s.ctx, nil)
 
-		expected := &pb.ScorecardList{
-			Scorecards: []*pb.Scorecard{},
-		}
-		actual, actualErr := svc.List(ctx, nil)
+	assert.NoError(s.T(), err)
+	assert.NotEmpty(s.T(), description.Title)
+	assert.NotEmpty(s.T(), description.Subtitle)
+	assert.NotEmpty(s.T(), description.Image)
+}
 
-		assert.Equal(t, expected, actual)
-		assert.NoError(t, actualErr)
-		m.AssertExpectations(t)
-	})
+func (s *ServiceSuite) TestInsert_ValidDomainScorecard_ShouldInsertValidPbScorecard() {
+	s.mockStore.On("Insert", domainScorecard).Return(&domainScorecard, nil)
+	s.mockStore.On("Get", 0).Return(&domainScorecard, nil)
 
-	t.Run("fail: Store.List failure", func(t *testing.T) {
-		m := mock.NewStore(t)
-		svc := service.NewScorecardsServerWithStore(m)
+	expected := protoScorecard
+	actual, actualErr := s.service.Insert(s.ctx, expected)
 
-		expectedErr := errors.New("example error on Store.List")
-		m.On("List").Return(nil, expectedErr)
+	assert.Equal(s.T(), expected, actual)
+	assert.NoError(s.T(), actualErr)
+}
 
-		actual, actualErr := svc.List(ctx, nil)
+func (s *ServiceSuite) TestInsert_StoreInsertFails_ShouldReturnError() {
+	expectedErr := errors.New("error on insert")
+	s.mockStore.On("Insert", domainScorecard).Return(nil, expectedErr)
 
-		assert.Nil(t, actual)
-		assert.EqualError(t, expectedErr, actualErr.Error())
-		m.AssertExpectations(t)
-	})
+	actual, actualErr := s.service.Insert(s.ctx, protoScorecard)
+
+	assert.EqualError(s.T(), expectedErr, actualErr.Error())
+	assert.Nil(s.T(), actual)
+}
+
+func (s *ServiceSuite) TestInsert_StoreGetFails_ShouldReturnError() {
+	expectedErr := errors.New("example error on Store.Get")
+	s.mockStore.On("Insert", domainScorecard).Return(&domainScorecard, nil)
+	s.mockStore.On("Get", 0).Return(nil, expectedErr)
+
+	actual, actualErr := s.service.Insert(s.ctx, protoScorecard)
+
+	assert.EqualError(s.T(), expectedErr, actualErr.Error())
+	assert.Nil(s.T(), actual)
+}
+
+func (s *ServiceSuite) TestList_StoreHasScorecards_ShouldReturnListOfScorecards() {
+	s.mockStore.On("List").Return(domainScorecards, nil)
+
+	expected := protoScorecardList
+	actual, actualErr := s.service.List(s.ctx, nil)
+
+	assert.Equal(s.T(), expected, actual)
+	assert.NoError(s.T(), actualErr)
+}
+
+func (s *ServiceSuite) TestList_StoreHasNoScorecards_ShouldReturnEmptyListOfScorecards() {
+	emptyScorecardSlice := []habits.Scorecard{}
+	s.mockStore.On("List").Return(emptyScorecardSlice, nil)
+
+	expected := &pb.ScorecardList{
+		Scorecards: []*pb.Scorecard{},
+	}
+	actual, actualErr := s.service.List(s.ctx, nil)
+
+	assert.Equal(s.T(), expected, actual)
+	assert.NoError(s.T(), actualErr)
+}
+
+func (s *ServiceSuite) TestList_StoreListFails_ShouldReturnError() {
+	expectedErr := errors.New("example error on Store.List")
+	s.mockStore.On("List").Return(nil, expectedErr)
+
+	actual, actualErr := s.service.List(s.ctx, nil)
+
+	assert.Nil(s.T(), actual)
+	assert.EqualError(s.T(), expectedErr, actualErr.Error())
 }

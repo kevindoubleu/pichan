@@ -16,11 +16,11 @@ type testLogger interface {
 	setZapSugaredLogger(*zap.SugaredLogger)
 }
 
-func (l ZapLogger) getLabel() string {
+func (l *ZapLogger) getLabel() string {
 	return l.label
 }
 
-func (l ZapLogger) getSubLabel() string {
+func (l *ZapLogger) getSubLabel() string {
 	return l.subLabel
 }
 

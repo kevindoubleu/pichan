@@ -17,14 +17,14 @@ func TestParserSuite(t *testing.T) {
 	suite.Run(t, new(ParserSuite))
 }
 
-func (s *ParserSuite) TestNewConfig_FileNotFound_ShouldThrowError() {
+func (s *ParserSuite) TestNewConfig_FileNotFound_ShouldReturnError() {
 	config, err := configs.NewConfig("invalid path to file")
 
 	assert.Nil(s.T(), config)
 	assert.EqualError(s.T(), err, "open invalid path to file: no such file or directory")
 }
 
-func (s *ParserSuite) TestNewConfig_InvalidYaml_ShouldThrowError() {
+func (s *ParserSuite) TestNewConfig_InvalidYaml_ShouldReturnError() {
 	fileWithInvalidYaml := "empty_config_file.yaml"
 	filePtr, err := os.Create(fileWithInvalidYaml)
 	_, _ = filePtr.WriteString(":")

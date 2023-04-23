@@ -26,8 +26,9 @@ type ScorecardsServer struct {
 	pb.UnimplementedScorecardsServer
 }
 
-func NewScorecardsServer(config configs.Habits) ScorecardsServer {
+func NewScorecardsServer(config configs.Config) ScorecardsServer {
 	log.SetSubLabel("NewScorecardsServer")
+	log.SetConfig(config.Log)
 
 	store, err := model.GetScorecardStore(config.StoreUrl, config.StoreName)
 	if err != nil || store == nil || !store.IsLive() {

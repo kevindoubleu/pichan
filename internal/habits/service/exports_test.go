@@ -2,10 +2,8 @@ package service
 
 import "github.com/kevindoubleu/pichan/configs"
 
-var config, _ = configs.NewConfig(configs.TestConfigFile)
-
-func NewScorecardsServerWithStore(store Store) ScorecardsServer {
-	scorecardsServer := NewScorecardsServer(config.Habits)
+func NewScorecardsServerWithStore(config configs.Config, store Store) ScorecardsServer {
+	scorecardsServer := NewScorecardsServer(config)
 	scorecardsServer.store = store
 	return scorecardsServer
 }

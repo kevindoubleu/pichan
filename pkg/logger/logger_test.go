@@ -12,7 +12,13 @@ import (
 var (
 	testLabel    = "main label"
 	testSubLabel = "sub label"
+	config       *configs.Config
 )
+
+func TestMain(m *testing.M) {
+	config, _ = configs.NewConfig("../../configs/" + configs.TestConfigFile)
+	m.Run()
+}
 
 func TestNewLogger(t *testing.T) {
 	logger := NewLogger(testLabel).(testLogger)
@@ -96,9 +102,9 @@ func TestErrorw(t *testing.T) {
 }
 
 func TestFatalError(t *testing.T) {
-	configs.LOG_SKIP_FATAL = true
 	logger := NewLogger(testLabel).(testLogger)
 	logger.SetSubLabel(testSubLabel)
+	logger.SetConfig(config.Log)
 	capturer := newLogOutputCapturer(logger)
 
 	logger.FatalError("fatal message", errors.New("example fatal error"))
@@ -114,9 +120,9 @@ func TestFatalError(t *testing.T) {
 }
 
 func TestFatalw(t *testing.T) {
-	configs.LOG_SKIP_FATAL = true
 	logger := NewLogger(testLabel).(testLogger)
 	logger.SetSubLabel(testSubLabel)
+	logger.SetConfig(config.Log)
 	capturer := newLogOutputCapturer(logger)
 
 	logger.Fatalw("fatal message", "key", "val", "key2", "val2")

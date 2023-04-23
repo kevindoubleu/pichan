@@ -10,6 +10,7 @@ import (
 
 type Logger interface {
 	SetSubLabel(subLabel string)
+	SetConfig(config configs.Log)
 
 	Infow(msg string, keysAndValues ...interface{})
 
@@ -35,13 +36,15 @@ type ZapLogger struct {
 	// identifies specific label such as
 	// functionname
 	subLabel string
+
+	config configs.Log
 }
 
 func NewLogger(label string) Logger {
-	config := zap.NewDevelopmentConfig()
-	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	zapConfig := zap.NewDevelopmentConfig()
+	zapConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
-	logger, err := config.Build()
+	logger, err := zapConfig.Build()
 	if err != nil {
 		log.Fatal("Logger.NewLogger: cannot build logger", err)
 	}
@@ -60,6 +63,10 @@ func (l *ZapLogger) GetZapLogger() *zap.Logger {
 
 func (l *ZapLogger) SetSubLabel(subLabel string) {
 	l.subLabel = subLabel
+}
+
+func (l *ZapLogger) SetConfig(config configs.Log) {
+	l.config = config
 }
 
 func (l *ZapLogger) Infow(msg string, keysAndValues ...interface{}) {
@@ -85,7 +92,7 @@ func (l *ZapLogger) Errorw(msg string, keysAndValues ...interface{}) {
 }
 
 func (l *ZapLogger) FatalError(msg string, err error) {
-	if configs.LOG_SKIP_FATAL {
+	if l.config.SkipFatal {
 		l.Error(l.prefix("skipped fatal: "+msg), err)
 		return
 	}
@@ -96,7 +103,7 @@ func (l *ZapLogger) FatalError(msg string, err error) {
 }
 
 func (l *ZapLogger) Fatalw(msg string, keysAndValues ...interface{}) {
-	if configs.LOG_SKIP_FATAL {
+	if l.config.SkipFatal {
 		l.Errorw(l.prefix("skipped fatal: "+msg), keysAndValues...)
 		return
 	}
@@ -104,10 +111,10 @@ func (l *ZapLogger) Fatalw(msg string, keysAndValues ...interface{}) {
 	l.zapSugaredLogger.Fatalw(l.prefix(msg), keysAndValues...)
 }
 
-func (l ZapLogger) prefix(msg string) string {
+func (l *ZapLogger) prefix(msg string) string {
 	return l.label + "." + l.subLabel + ": " + msg
 }
 
-func (l ZapLogger) getPrefix() string {
+func (l *ZapLogger) getPrefix() string {
 	return l.label + "." + l.subLabel
 }

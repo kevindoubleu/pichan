@@ -18,7 +18,8 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	config, _ = configs.NewConfig(configs.TestConfigFile)
+	config, _ = configs.NewConfig("../../../configs/" + configs.TestConfigFile)
+	m.Run()
 }
 
 func TestGetScorecardStore(t *testing.T) {
