@@ -31,6 +31,10 @@ func GetScorecardStore(conn, table string) (*ScorecardStore, error) {
 	}, nil
 }
 
+func (s ScorecardStore) GetDb() *sql.DB {
+	return s.db
+}
+
 func (s ScorecardStore) IsLive() bool {
 	log.SetSubLabel("Live")
 
