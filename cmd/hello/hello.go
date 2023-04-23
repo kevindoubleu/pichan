@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/kevindoubleu/pichan/pkg/hello"
+	"github.com/kevindoubleu/pichan/internal/hello"
 )
 
 func main() {

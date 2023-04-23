@@ -3,7 +3,7 @@ package hello_test
 import (
 	"testing"
 
-	"github.com/kevindoubleu/pichan/pkg/hello"
+	"github.com/kevindoubleu/pichan/internal/hello"
 )
 
 func TestBuildGreeting(t *testing.T) {
