@@ -63,7 +63,7 @@ func resetTestDb() {
 		"result", result,
 		"err", err,
 	)
-	result, err = sqlDb.Exec(db.CreateTable(config.StoreName, habits.SCORECARD_SCHEMA))
+	result, err = sqlDb.Exec(db.CreateTable(config.StoreName, habits.ScorecardSchema))
 	log.Infow("creating table",
 		"result", result,
 		"err", err,

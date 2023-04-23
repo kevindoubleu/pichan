@@ -9,7 +9,7 @@ type Scorecard struct {
 }
 
 const (
-	SCORECARD_SCHEMA = `
+	ScorecardSchema = `
 	id SERIAL,
 	name VARCHAR(50) NOT NULL,
 	connotation HABIT_CONNOTATION NOT NULL DEFAULT 'Neutral',
