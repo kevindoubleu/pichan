@@ -15,33 +15,34 @@ import (
 )
 
 var (
-	ctx = context.Background()
+	ctx    = context.Background()
+	config *configs.Config
 )
+
+func TestMain(m *testing.M) {
+	config, _ = configs.NewConfig(configs.TestConfigFile)
+}
 
 func TestNewScorecardsServer(t *testing.T) {
 	t.Run("happy case", func(t *testing.T) {
-		server := service.NewScorecardsServer()
+		server := service.NewScorecardsServer(config.Habits)
 
 		assert.NotNil(t, server)
 		assert.True(t, server.GetStore().IsLive())
 	})
 
 	t.Run("fail to get scorecard store", func(t *testing.T) {
-		configs.LOG_SKIP_FATAL = true
-		validUrl := configs.HABITS_STORE
-		configs.HABITS_STORE = "invalid url"
+		configWithInvalidUrl, _ := configs.NewConfig(configs.TestConfigFile)
+		configWithInvalidUrl.Habits.StoreUrl = "invalid url"
 
-		server := service.NewScorecardsServer()
+		server := service.NewScorecardsServer(configWithInvalidUrl.Habits)
 
 		assert.False(t, server.GetStore().IsLive())
-
-		configs.LOG_SKIP_FATAL = false
-		configs.HABITS_STORE = validUrl
 	})
 }
 
 func TestDescribe(t *testing.T) {
-	svc := service.NewScorecardsServer()
+	svc := service.NewScorecardsServer(config.Habits)
 	description, err := svc.Describe(ctx, nil)
 
 	assert.NoError(t, err)

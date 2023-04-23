@@ -1,7 +1,11 @@
 package service
 
+import "github.com/kevindoubleu/pichan/configs"
+
+var config, _ = configs.NewConfig(configs.TestConfigFile)
+
 func NewScorecardsServerWithStore(store Store) ScorecardsServer {
-	scorecardsServer := NewScorecardsServer()
+	scorecardsServer := NewScorecardsServer(config.Habits)
 	scorecardsServer.store = store
 	return scorecardsServer
 }

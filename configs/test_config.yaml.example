@@ -1,0 +1,10 @@
+server:
+  host: 127.0.0.1
+  port: 8080
+
+log:
+  skip_fatal: true
+
+habits:
+  store_url: postgres://pichan:pichan@localhost/habits
+  store_name: scorecard_test

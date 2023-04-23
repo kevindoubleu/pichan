@@ -11,27 +11,60 @@ import (
 )
 
 func main() {
+	config := loadConfigs()
+
 	log := logger.NewLogger("habits.main")
 	log.Infow("starting server",
-		"url", configs.HABITS_URL,
+		"host", config.Server.Host,
+		"port", config.Server.Port,
 	)
 
-	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(logger.NewUnaryServerLogger()),
-	)
-	pb.RegisterScorecardsServer(grpcServer, service.NewScorecardsServer())
+	listener := startTcpListener(log, config)
+	closer := getListenerCloser(log, listener)
+	defer closer()
 
-	listener, err := net.Listen("tcp", configs.HABITS_URL)
-	if err != nil {
-		log.Fatalw("could not listen",
-			"url", configs.HABITS_URL,
-			"err", err,
-		)
-	}
-	defer listener.Close()
-
-	err = grpcServer.Serve(listener)
+	grpcServer := startGrpcServer(config)
+	err := grpcServer.Serve(listener)
 	if err != nil {
 		log.FatalError("grpc server returned ungracefully", err)
 	}
+}
+
+func startTcpListener(log logger.Logger, config *configs.Config) net.Listener {
+	listener, err := net.Listen("tcp", config.Server.Host+":"+config.Server.Port)
+	if err != nil {
+		log.Fatalw("could not listen",
+			"url", config.Server.Host+":"+config.Server.Port,
+			"err", err,
+		)
+	}
+	return listener
+}
+
+func getListenerCloser(log logger.Logger, listener net.Listener) func() {
+	return func() {
+		err := listener.Close()
+		if err != nil {
+			log.Errorw("could not close listener",
+				"listener", listener,
+				"err", err,
+			)
+		}
+	}
+}
+
+func loadConfigs() *configs.Config {
+	config, err := configs.NewConfig(configs.ConfigFile)
+	if err != nil {
+		panic(err)
+	}
+	return config
+}
+
+func startGrpcServer(config *configs.Config) *grpc.Server {
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(logger.NewUnaryServerLogger()),
+	)
+	pb.RegisterScorecardsServer(grpcServer, service.NewScorecardsServer(config.Habits))
+	return grpcServer
 }

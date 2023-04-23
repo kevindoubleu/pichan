@@ -26,10 +26,10 @@ type ScorecardsServer struct {
 	pb.UnimplementedScorecardsServer
 }
 
-func NewScorecardsServer() ScorecardsServer {
+func NewScorecardsServer(config configs.Habits) ScorecardsServer {
 	log.SetSubLabel("NewScorecardsServer")
 
-	store, err := model.GetScorecardStore(configs.HABITS_STORE, configs.HABITS_SCORECARD_STORE)
+	store, err := model.GetScorecardStore(config.StoreUrl, config.StoreName)
 	if err != nil || store == nil || !store.IsLive() {
 		log.Fatalw("failed to get ScorecardStore",
 			"err", err,

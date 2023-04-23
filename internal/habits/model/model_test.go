@@ -13,9 +13,13 @@ import (
 )
 
 var (
-	log                  = logger.NewLogger("habits.model_test")
-	TEST_SCORECARD_STORE = "scorecard_test"
+	log    = logger.NewLogger("habits.model_test")
+	config *configs.Config
 )
+
+func TestMain(m *testing.M) {
+	config, _ = configs.NewConfig(configs.TestConfigFile)
+}
 
 func TestGetScorecardStore(t *testing.T) {
 	testCases := []struct {
@@ -29,13 +33,13 @@ func TestGetScorecardStore(t *testing.T) {
 			live: false,
 		}, {
 			desc: "valid conn string",
-			conn: "postgres://kevin:kevin@localhost/habits",
+			conn: config.StoreUrl,
 			live: true,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			store, _ := model.GetScorecardStore(tC.conn, TEST_SCORECARD_STORE)
+			store, _ := model.GetScorecardStore(tC.conn, config.StoreName)
 			if tC.live != store.IsLive() {
 				t.Errorf("TestGetScorecardStore: liveness %t != %t", tC.live, store.IsLive())
 			}
@@ -46,19 +50,19 @@ func TestGetScorecardStore(t *testing.T) {
 func resetTestDb() {
 	log.SetSubLabel("setup")
 
-	store, err := model.GetScorecardStore(configs.HABITS_STORE, TEST_SCORECARD_STORE)
+	store, err := model.GetScorecardStore(config.StoreUrl, config.StoreName)
 	if err != nil && store.IsLive() {
 		log.FatalError("error initializing test db", err)
 	}
 	sqlDb := store.GetDb()
 	defer sqlDb.Close()
 
-	result, err := sqlDb.Exec(db.DropTable(TEST_SCORECARD_STORE))
+	result, err := sqlDb.Exec(db.DropTable(config.StoreName))
 	log.Infow("dropping table",
 		"result", result,
 		"err", err,
 	)
-	result, err = sqlDb.Exec(db.CreateTable(TEST_SCORECARD_STORE, habits.SCORECARD_SCHEMA))
+	result, err = sqlDb.Exec(db.CreateTable(config.StoreName, habits.SCORECARD_SCHEMA))
 	log.Infow("creating table",
 		"result", result,
 		"err", err,
@@ -67,7 +71,7 @@ func resetTestDb() {
 
 func TestInsert(t *testing.T) {
 	resetTestDb()
-	store, err := model.GetScorecardStore(configs.HABITS_STORE, TEST_SCORECARD_STORE)
+	store, err := model.GetScorecardStore(config.StoreUrl, config.StoreName)
 	if err != nil || store == nil {
 		t.Fatal("TestInsert: cannot get ScorecardStore", err)
 	}
@@ -152,7 +156,7 @@ func TestInsert(t *testing.T) {
 
 func TestList(t *testing.T) {
 	resetTestDb()
-	store, err := model.GetScorecardStore(configs.HABITS_STORE, TEST_SCORECARD_STORE)
+	store, err := model.GetScorecardStore(config.StoreUrl, config.StoreName)
 	if err != nil || store == nil {
 		t.Fatal("TestInsert: cannot get ScorecardStore", err)
 	}
@@ -201,7 +205,7 @@ func TestList(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	resetTestDb()
-	store, err := model.GetScorecardStore(configs.HABITS_STORE, TEST_SCORECARD_STORE)
+	store, err := model.GetScorecardStore(config.StoreUrl, config.StoreName)
 	if err != nil || store == nil {
 		t.Fatal("TestInsert: cannot get ScorecardStore", err)
 	}
@@ -261,8 +265,8 @@ func equalNotNilScorecardList(expecteds, actuals []habits.Scorecard) bool {
 }
 
 func equalNotNilScorecards(expected, actual *habits.Scorecard) bool {
-	return (expected.Name == actual.Name &&
+	return expected.Name == actual.Name &&
 		expected.Connotation == actual.Connotation &&
 		expected.Time == actual.Time &&
-		expected.Order == actual.Order)
+		expected.Order == actual.Order
 }
