@@ -17,4 +17,4 @@ VALUES
         'Psychology of Money',
         'Complete',
         to_timestamp(1676395200)
-    )
+    );

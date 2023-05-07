@@ -7,4 +7,4 @@ CREATE TABLE books (
     name VARCHAR(50) NOT NULL,
     action BOOK_ACTION NOT NULL,
     time TIMESTAMP NOT NULL DEFAULT NOW()
-)
+);

@@ -1,9 +1,9 @@
 \c habits;
 
-TRUNCATE scorecard;
+TRUNCATE scorecards;
 
 INSERT INTO
-    scorecard (name, connotation, sortOrder)
+    scorecards (name, connotation, sortOrder)
 VALUES
     (
         'wake up',

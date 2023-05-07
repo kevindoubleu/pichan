@@ -1,8 +1,8 @@
 \c habits;
 
-DROP TABLE IF EXISTS scorecard;
+DROP TABLE IF EXISTS scorecards;
 
-CREATE TABLE scorecard (
+CREATE TABLE scorecards (
     id SERIAL,
     name VARCHAR(50) NOT NULL,
     connotation HABIT_CONNOTATION NOT NULL DEFAULT 'Neutral',

@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  postgres:
+    build: ./db
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: pichan
+      POSTGRES_PASSWORD: pichan
