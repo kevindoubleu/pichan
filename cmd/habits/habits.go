@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net"
 
 	"github.com/kevindoubleu/pichan/configs"
@@ -31,7 +32,9 @@ func main() {
 }
 
 func loadConfigs() configs.Config {
-	config, err := configs.NewConfig(configs.ConfigFile)
+	configFile := flag.String("config", "configs/config.yaml", "config yaml file")
+	flag.Parse()
+	config, err := configs.NewConfig(*configFile)
 	if err != nil {
 		panic(err)
 	}
