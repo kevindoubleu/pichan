@@ -3,17 +3,22 @@
 echo "initializing db contents"
 
 setup_db() {
-  cd $1
+  cd scripts/$1
+
   psql -U $POSTGRES_USER -af create-db.sql
   psql -U $POSTGRES_USER -af create-types.sql
   psql -U $POSTGRES_USER -af create-tables.sql
-  psql -U $POSTGRES_USER -af insert-data.sql
-  cd ..
+  echo "dollar 2 is" $2
+  if [ "$2" == "--sample" ]; then
+    psql -U $POSTGRES_USER -af insert-data.sql
+  fi
+
+  cd ../..
 }
 
 main() {
-  setup_db books
-  setup_db habits
+  setup_db books $1
+  setup_db habits $1
 }
 
-main
+main "$@"

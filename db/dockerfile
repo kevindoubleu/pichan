@@ -3,5 +3,6 @@ FROM postgres:14.7-alpine
 VOLUME ["/var/lib/postgresql/data"]
 
 WORKDIR /app
-COPY . .
+COPY /scripts ./scripts
+COPY init_db.sh .
 RUN ["chmod", "+x", "init_db.sh"]

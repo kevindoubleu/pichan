@@ -6,5 +6,5 @@ log:
   skip_fatal: false
 
 habits:
-  store_url: postgres://pichan:pichan@localhost/habits
+  store_url: postgres://pichan:pichan@postgres/habits?sslmode=disable
   store_name: scorecards

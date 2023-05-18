@@ -13,7 +13,18 @@ open-coverage:
 	open coverage/coverage.html
 
 run-habits: build-habits
-	go run cmd/habits/habits.go
+	chmod +x out/habits.out
+	out/habits.out -config=configs/config.yaml
 
+# CGO_ENABLED=0; Enables statically linked binaries to make the application more portable
+# the golang:alpine docker image does not have glibc binary which would've been be needed
 build-habits:
-	go build -o out/habits.out cmd/habits/habits.go
+	CGO_ENABLED=0 \
+	GOOS=linux \
+		go build \
+			-o out/habits.out \
+			cmd/habits/habits.go
+
+init-configs:
+	cp configs/config.yaml.example configs/config.yaml
+	cp configs/test_config.yaml.example configs/test_config.yaml

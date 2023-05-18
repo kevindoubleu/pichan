@@ -3,8 +3,26 @@ version: "3"
 services:
   postgres:
     build: ./db
+    command: ["postgres", "-c", "log_statement=all"]
     volumes:
       - ./db/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "pichan"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
     environment:
       POSTGRES_USER: pichan
       POSTGRES_PASSWORD: pichan
+
+  habits:
+    build:
+      context: ./
+      dockerfile: ./deployments/habits/dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      

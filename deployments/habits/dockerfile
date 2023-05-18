@@ -1,0 +1,9 @@
+FROM golang:1.20-alpine
+
+WORKDIR /app
+COPY ./out .
+COPY ./configs/config.yaml ./config.yaml
+
+RUN ["chmod", "+x", "/app/habits.out"]
+
+ENTRYPOINT ["/app/habits.out", "-config=/app/config.yaml"]
